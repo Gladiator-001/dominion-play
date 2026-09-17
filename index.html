@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#08252A">
+  <!-- "Sur l'écran d'accueil" on an iPhone opens the preview full screen, like an app. -->
+  <meta name="apple-mobile-web-app-title" content="Dominion">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <title>DOMINION · aperçu web</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #08252A; overflow: hidden; overscroll-behavior: none; -webkit-user-select: none; user-select: none; }
+    /* Keeps the game clear of the notch and the home indicator. */
+    #stage { position: fixed; inset: 0; box-sizing: border-box; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); display: flex; align-items: center; justify-content: center; }
+    /* A portrait game: full screen on a phone, a phone-shaped column on a desktop. */
+    #unity-canvas { width: 100%; height: 100%; max-width: calc(100dvh * 9 / 19.5); display: block; background: #08252A; touch-action: none; outline: none; -webkit-touch-callout: none; }
+    #loading { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; color: #EEDFC5; font: 600 22px Georgia, "Times New Roman", serif; letter-spacing: 0.12em; }
+    #bar { width: 60vw; max-width: 320px; height: 10px; border: 2px solid #BC9361; border-radius: 6px; overflow: hidden; }
+    #fill { height: 100%; width: 0; background: linear-gradient(90deg, #BC9361, #E9CC86); transition: width 0.2s; }
+    #note { font: 400 13px -apple-system, "Segoe UI", sans-serif; letter-spacing: 0; color: #BC9361; max-width: 80vw; text-align: center; }
+    #error { display: none; position: fixed; inset: auto 0 0 0; color: #F2B8A0; font: 14px -apple-system, "Segoe UI", sans-serif; padding: 24px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div id="stage"><canvas id="unity-canvas" tabindex="-1"></canvas></div>
+  <div id="loading">
+    <div>DOMINION</div>
+    <div id="bar"><div id="fill"></div></div>
+    <div id="note">Aperçu web de la tranche 1 · le jeu cible est l'application native iOS et Android</div>
+  </div>
+  <div id="error"></div>
+  <script>
+    const canvas = document.querySelector("#unity-canvas");
+    const config = {
+      dataUrl: "Build/Web.data.unityweb",
+      frameworkUrl: "Build/Web.framework.js.unityweb",
+      codeUrl: "Build/Web.wasm.unityweb",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "Ethan Koskas",
+      productName: "DOMINION",
+      productVersion: "0.1.0",
+      // A 3x Retina canvas costs far more than it shows: phones render at 2x at most.
+      devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+      matchWebGLToCanvasSize: true,
+    };
+    const script = document.createElement("script");
+    script.src = "Build/Web.loader.js";
+    script.onload = () => {
+      createUnityInstance(canvas, config, (progress) => {
+        document.querySelector("#fill").style.width = (100 * progress) + "%";
+      }).then(() => {
+        document.querySelector("#loading").remove();
+      }).catch((message) => {
+        const error = document.querySelector("#error");
+        error.textContent = message;
+        error.style.display = "block";
+      });
+    };
+    document.body.appendChild(script);
+  </script>
+</body>
+</html>
